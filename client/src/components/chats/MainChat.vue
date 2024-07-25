@@ -51,7 +51,8 @@ export default defineComponent({
       messages: [] as Message[],
       conversations: [] as Conversation[],
       selectedConversation: null as Conversation | null,
-      refreshInterval: null as ReturnType<typeof setInterval> | null
+      refreshInterval: null as ReturnType<typeof setInterval> | null,
+      email: this.$route.query.email || '', // Add this line to capture the email from query params
     };
   },
   methods: {
@@ -166,6 +167,10 @@ export default defineComponent({
     }
   },
   async mounted() {
+    if (this.email) {
+      // Use the email as necessary
+      console.log(`Email from query params: ${this.email}`);
+    }
     await this.fetchAllMessages();
     this.scrollToEnd();
     this.startMessageRefresh();

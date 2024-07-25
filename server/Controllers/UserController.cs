@@ -34,4 +34,15 @@ public class UserController : ControllerBase
         }
         return profiles;
     }
+
+    [HttpGet("profiles/{email}")]
+    public async Task<ActionResult<UserProfile>> GetUsernameFromEmail(string email)
+    {
+        var profile = await _userService.GetUsernameFromEmail( email );
+        if (profile == null)
+        {
+            return NotFound();
+        }
+        return profile;
+    }
 }

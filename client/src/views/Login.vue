@@ -76,14 +76,13 @@ export default {
                 );
                 localStorage.setItem('token', response.data.token);
                 this.userStore.login(response.data);
-                //TODO: push to dashboard
-                this.$router.push("/chats");
+                this.$router.push({ path: '/chats', query: { email: this.email } });
             } catch (error) {
                 console.log(error);
                 alert("Incorrect Username and/or Password!");
             }
         },
-    },
+    }
 };
 </script>
 

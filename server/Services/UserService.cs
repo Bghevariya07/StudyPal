@@ -23,4 +23,9 @@ public class UserService
     {
         return await _userProfiles.Find(_ => true).ToListAsync();
     }
+    
+    public async Task<UserProfile> GetUsernameFromEmail(string email)
+    {
+        return await _userProfiles.Find(profile => profile.Email.ToLower() == email.ToLower()).FirstOrDefaultAsync();
+    }
 }
