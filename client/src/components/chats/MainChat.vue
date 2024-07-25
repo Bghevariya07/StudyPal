@@ -24,7 +24,7 @@ import axios from 'axios';
 import SideBar from './SideBar.vue';
 import ChatWindow from './ChatWindow.vue';
 
-axios.defaults.baseURL = 'http://localhost:5267';
+axios.defaults.baseURL = 'https://studypal-s60l.onrender.com/';
 
 interface Message {
   senderId: string;

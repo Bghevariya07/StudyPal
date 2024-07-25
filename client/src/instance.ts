@@ -1,5 +1,5 @@
 import axios from "axios";
 
 export const server = axios.create({
-    baseURL: "http://localhost:5267/api/"
+    baseURL: "https://studypal-s60l.onrender.com/api/"
 });

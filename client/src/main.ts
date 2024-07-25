@@ -5,6 +5,6 @@ import router from './router'
 import axios from 'axios'
 import { createPinia } from "pinia"
 
-axios.defaults.baseURL="http://localhost:5267/";
+axios.defaults.baseURL="https://studypal-s60l.onrender.com/";
 const pinia = createPinia();
 createApp(App).use(router).use(pinia).mount('#app');

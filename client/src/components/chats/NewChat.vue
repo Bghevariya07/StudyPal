@@ -21,7 +21,7 @@
 import axios from 'axios';
 import PlusIcon from '../../assets/plus-icon-1.svg'
 
-axios.defaults.baseURL = 'http://localhost:5267';
+axios.defaults.baseURL = 'https://studypal-s60l.onrender.com/';
 
 export default {
     data() {
