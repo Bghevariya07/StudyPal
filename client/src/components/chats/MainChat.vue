@@ -46,7 +46,7 @@ export default defineComponent({
   },
   data() {
     return {
-      currentUserId: 'ghevariya',
+      currentUserId: '',
       newMessage: '',
       messages: [] as Message[],
       conversations: [] as Conversation[],
@@ -56,6 +56,15 @@ export default defineComponent({
     };
   },
   methods: {
+    async fetchUsername() {
+      try {
+        const response = await axios.get('api/User/profiles/' + this.email);
+        console.log(response.data.username);
+        this.currentUserId = response.data.username;
+      } catch (error) {
+        console.error('Error fetching username:', error);
+      }
+    },
     async fetchAllMessages() {
       try {
         const response = await axios.get('/api/chat/messages');
@@ -172,6 +181,7 @@ export default defineComponent({
       console.log(`Email from query params: ${this.email}`);
     }
     await this.fetchAllMessages();
+    await this.fetchUsername();
     this.scrollToEnd();
     this.startMessageRefresh();
   },
