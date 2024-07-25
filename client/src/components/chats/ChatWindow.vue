@@ -1,6 +1,6 @@
 <template>
   <div class="w-2/3 flex flex-col">
-    <div v-if="selectedConversation.id" class="flex-1 flex flex-col">
+    <div v-if="selectedConversation?.id" class="flex-1 flex flex-col">
       <div class="flex items-center p-4 border-b border-gray-300 bg-zinc-300 rounded-tr-2xl">
         <div class="w-10 h-10 rounded-full bg-zinc-500 text-white flex items-center justify-center mr-3">
           {{ selectedConversation.id.toUpperCase()[0] }}
@@ -49,13 +49,31 @@
 </template>
 
 <script lang="ts">
+import { defineComponent, PropType } from 'vue';
 import SendIcon from '../../assets/send-icon.png';
 
-export default {
+interface Message {
+  senderId: string;
+  message: string;
+  time: string;
+}
+
+interface Conversation {
+  id: string;
+  messages: Message[];
+}
+
+export default defineComponent({
   props: {
-    selectedConversation: Object,
-    currentUserId: String,
-    newMessage: String
+    selectedConversation: Object as PropType<Conversation | null>,
+    currentUserId: {
+      type: String,
+      required: true
+    },
+    newMessage: {
+      type: String,
+      required: true
+    }
   },
   data() {
     return {
@@ -66,16 +84,16 @@ export default {
     sendMessage() {
       this.$emit('sendMessage');
     },
-    updateNewMessage(event) {
-      this.$emit('updateNewMessage', event.target.value);
+    updateNewMessage(event: Event) {
+      this.$emit('updateNewMessage', (event.target as HTMLInputElement).value);
     },
-    formatTime(time) {
+    formatTime(time: string) {
       const date = new Date(time);
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     },
     scrollToEnd() {
       this.$nextTick(() => {
-        const container = this.$refs.messagesContainer;
+        const container = this.$refs.messagesContainer as HTMLElement;
         if (container) {
           container.scrollTop = container.scrollHeight;
         }
@@ -93,7 +111,7 @@ export default {
   mounted() {
     this.scrollToEnd();
   }
-};
+});
 </script>
 
 <style scoped>
