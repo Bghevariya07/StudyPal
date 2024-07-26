@@ -21,9 +21,13 @@
 import axios from 'axios';
 import PlusIcon from '../../assets/plus-icon-1.svg'
 
-axios.defaults.baseURL = 'https://studypal-s60l.onrender.com/';
-
 export default {
+    props: {
+        currentUserId: {
+            type: String,
+            required: true
+        }
+    },
     data() {
         return {
             PlusIcon,
@@ -56,7 +60,7 @@ export default {
             const name = user.split(" : ")[0];
             this.profiles.map(profile => {
                 if (profile.username === name) {
-                    this.$emit('open-chat', profile.username);
+                    this.$emit('open-chat', { username: profile.username, currentUserId: this.currentUserId });
                     this.isSearchBoxOpen = false;
                 }
             });

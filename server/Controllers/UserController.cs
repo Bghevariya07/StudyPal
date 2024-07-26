@@ -28,7 +28,18 @@ public class UserController : ControllerBase
     public async Task<ActionResult<List<UserProfile>>> GetAllUserProfiles()
     {
         var profiles = await _userService.GetAllUserProfiles();
-        if (profiles == null || profiles.Count == 0)
+        if (profiles == null)
+        {
+            return NotFound();
+        }
+        return profiles;
+    }
+
+    [HttpGet("profiles/not/{username}")]
+    public async Task<ActionResult<List<UserProfile>>> GetProfilesNotUsername(string username)
+    {
+        var profiles = await _userService.GetProfilesNotUsername(username);
+        if (profiles == null)
         {
             return NotFound();
         }

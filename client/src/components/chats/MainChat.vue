@@ -1,9 +1,10 @@
 <template>
-  <div class="flex justify-around main-window pt-20 p-10">
+  <div v-if="currentUserId != ''" class="flex justify-around main-window pt-20 p-10">
     <div class="flex w-screen">
       <SideBar
         :conversations="conversations"
         :selectedConversation="selectedConversation"
+        :currentUserId="currentUserId"
         @selectConversation="selectConversation"
         @open-chat="openChatWindow"
       />
@@ -24,25 +25,30 @@ import axios from 'axios';
 import SideBar from './SideBar.vue';
 import ChatWindow from './ChatWindow.vue';
 
-axios.defaults.baseURL = 'https://studypal-s60l.onrender.com/';
+enum MessageType {
+  UserMessage = 'UserMessage',
+  GroupMessage = 'GroupMessage'
+}
 
 interface Message {
   senderId: string;
   receiverId: string;
   message: string;
   time: string;
+  type: MessageType;
 }
 
 interface Conversation {
   id: string;
-  name?: string;
+  name: string;
   messages: Message[];
+  type: MessageType;
 }
 
 export default defineComponent({
   components: {
     SideBar,
-    ChatWindow
+    ChatWindow,
   },
   data() {
     return {
@@ -52,29 +58,29 @@ export default defineComponent({
       conversations: [] as Conversation[],
       selectedConversation: null as Conversation | null,
       refreshInterval: null as ReturnType<typeof setInterval> | null,
-      email: this.$route.query.email || '', // Add this line to capture the email from query params
+      email: this.$route.query.email || '',
     };
   },
   methods: {
     async fetchUsername() {
       try {
         const response = await axios.get('api/User/profiles/' + this.email);
-        console.log(response.data.username);
         this.currentUserId = response.data.username;
+        this.fetchAllMessages();
       } catch (error) {
-        console.error('Error fetching username:', error);
+        console.log(error);
       }
     },
     async fetchAllMessages() {
       try {
-        const response = await axios.get('/api/chat/messages');
+        const response = await axios.get('/api/chat/messages/' + this.currentUserId);
         this.messages = response.data;
         this.conversations = this.getUniqueUserIds();
         if (this.selectedConversation?.id) {
           this.selectConversation(this.selectedConversation);
         }
       } catch (error) {
-        console.error('Error fetching messages:', error);
+        console.log(error);
       }
     },
     getUniqueUserIds(): Conversation[] {
@@ -100,7 +106,8 @@ export default defineComponent({
       return userArray.map(user => ({
         id: user.id,
         name: this.getConversationName(user.id),
-        messages: this.filterMessagesBySelectedUser(user.id)
+        messages: this.filterMessagesBySelectedUser(user.id),
+        type: user.id.startsWith('group') ? MessageType.GroupMessage : MessageType.UserMessage
       }));
     },
     getConversationName(userId: string): string {
@@ -111,7 +118,8 @@ export default defineComponent({
       const filteredMessages = this.messages.filter(
         message =>
           (message.senderId === this.currentUserId && message.receiverId === userId) ||
-          (message.receiverId === this.currentUserId && message.senderId === userId)
+          (message.receiverId === this.currentUserId && message.senderId === userId) ||
+          (message.type == MessageType.GroupMessage)
       );
       return filteredMessages.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())[0] || {};
     },
@@ -119,23 +127,28 @@ export default defineComponent({
       this.selectedConversation = {
         id: conversation.id,
         name: conversation.name,
-        messages: this.filterMessagesBySelectedUser(conversation.id)
+        messages: this.filterMessagesBySelectedUser(conversation.id),
+        type: conversation.type
       };
+
     },
     filterMessagesBySelectedUser(selectedUserId: string): Message[] {
       return this.messages.filter(
         message =>
           (message.senderId === this.currentUserId && message.receiverId === selectedUserId) ||
-          (message.receiverId === this.currentUserId && message.senderId === selectedUserId)
+          (message.receiverId === this.currentUserId && message.senderId === selectedUserId) ||
+          (message.receiverId === selectedUserId)
       );
     },
     async sendMessage() {
       if (this.newMessage.trim() === '') return;
+      const messageType = this.selectedConversation!.type;
       const message: Message = {
         senderId: this.currentUserId,
         receiverId: this.selectedConversation!.id,
         message: this.newMessage,
-        time: new Date().toISOString()
+        time: new Date().toISOString(),
+        type: messageType
       };
 
       try {
@@ -147,7 +160,7 @@ export default defineComponent({
         this.newMessage = '';
         this.scrollToEnd();
       } catch (error) {
-        console.error('Error sending message:', error);
+        console.log(error);
       }
     },
     updateNewMessage(newMessage: string) {
@@ -162,12 +175,12 @@ export default defineComponent({
       });
     },
     openChatWindow(username: string) {
-      const conversation: Conversation = { id: username, name: username, messages: [] };
+      const conversation: Conversation = { id: username, name: username, messages: [], type: MessageType.UserMessage };
       this.scrollToEnd();
       this.selectConversation(conversation);
     },
     startMessageRefresh() {
-      this.refreshInterval = setInterval(this.fetchAllMessages, 5000); // Refresh every 5 seconds
+      this.refreshInterval = setInterval(this.fetchAllMessages, 5000);
     },
     stopMessageRefresh() {
       if (this.refreshInterval) {
@@ -176,14 +189,12 @@ export default defineComponent({
     }
   },
   async mounted() {
-    if (this.email) {
-      // Use the email as necessary
-      console.log(`Email from query params: ${this.email}`);
+    if (this.email !== '') {
+      await this.fetchUsername();
+      this.scrollToEnd();
+      this.startMessageRefresh();
+
     }
-    await this.fetchAllMessages();
-    await this.fetchUsername();
-    this.scrollToEnd();
-    this.startMessageRefresh();
   },
   beforeUnmount() {
     this.stopMessageRefresh();

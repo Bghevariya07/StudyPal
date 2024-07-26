@@ -7,6 +7,7 @@
         </div>
         <div>
           <p class="text-gray-800 font-bold">{{ selectedConversation.id }}</p>
+          <p class="text-gray-600">{{ selectedConversation.name }}</p>
         </div>
       </div>
 
@@ -36,14 +37,6 @@
       <div class="flex-1 p-4 flex items-center justify-center">
         <p class="text-center text-gray-500 italic">Select a chat to start messaging</p>
       </div>
-
-      <div class="p-4 border-t flex items-center bg-zinc-100 sticky bottom-0 rounded-br-2xl">
-        <input :value="newMessage" @input="updateNewMessage" @keyup.enter="sendMessage" placeholder="Write a message"
-          class="flex-1 py-3 px-5 border border-gray-300 rounded-full mr-2" />
-        <button @click="sendMessage" class="bg-blue-500 text-white p-3 rounded-full">
-          <img :src="SendIcon" alt="sendIcon-icon" class="w-8" />
-        </button>
-      </div>
     </div>
   </div>
 </template>
@@ -52,15 +45,23 @@
 import { defineComponent, PropType } from 'vue';
 import SendIcon from '../../assets/send-icon.png';
 
+enum MessageType {
+  UserMessage = 'UserMessage',
+  GroupMessage = 'GroupMessage'
+}
+
 interface Message {
   senderId: string;
   message: string;
   time: string;
+  type: MessageType;
 }
 
 interface Conversation {
   id: string;
+  name: string;
   messages: Message[];
+  type: MessageType;
 }
 
 export default defineComponent({

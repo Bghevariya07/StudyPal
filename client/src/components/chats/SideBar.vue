@@ -2,10 +2,10 @@
   <div class="flex w-1/3 justify-around flex-col">
     <div class="p-4 font-bold border rounded-tl-2xl flex justify-between">
       <h6 class="">Conversations</h6>
-      <NewChat @open-chat="openChatWindow" />
+      <NewChat @open-chat="openChatWindow" :currentUserId="currentUserId" />
     </div>
 
-    <div class="border-l h-full border-gray-300 bg-zinc-100 overflow-y-auto rounded-bl-2xl">
+    <div class="border-l h-full border-gray-300 bg-zinc-100 overflow-y-auto rounded-bl-2xl border-r">
       <div v-for="conversation in conversations" :key="conversation.id" @click="selectConversation(conversation)"
         class="flex items-center p-3 border-b border-gray-300 cursor-pointer hover:bg-gray-100"
         :class="{ 'bg-blue-100': conversation.id === selectedConversation?.id }">
@@ -17,7 +17,7 @@
             {{ conversation.name }}
           </p>
           <p :class="{ 'font-bold': conversation.id === selectedConversation?.id }" class="text-gray-500 text-sm">
-            {{ getLastMessage(conversation.id).message }}
+            {{ formatMessage(getLastMessage(conversation.id).message) }}
           </p>
         </div>
         <div class="ml-auto w-20 text-right text-gray-400 text-xs">
@@ -43,6 +43,7 @@ interface Conversation {
   id: string;
   name?: string;
   messages: Message[];
+  type: string;
 }
 
 export default defineComponent({
@@ -53,6 +54,10 @@ export default defineComponent({
     },
     selectedConversation: {
       type: Object as PropType<Conversation | null>,
+      required: true
+    },
+    currentUserId: {
+      type: String,
       required: true
     }
   },
@@ -66,8 +71,8 @@ export default defineComponent({
     getLastMessage(userId: string): Message {
       const filteredMessages = (this.$parent as any).messages.filter(
         (message: Message) =>
-          (message.senderId === (this.$parent as any).currentUserId && message.receiverId === userId) ||
-          (message.receiverId === (this.$parent as any).currentUserId && message.senderId === userId)
+          (message.senderId === this.currentUserId && message.receiverId === userId) ||
+          (message.receiverId === this.currentUserId && message.senderId === userId)
       );
       return filteredMessages.sort((a: Message, b: Message) => new Date(b.time).getTime() - new Date(a.time).getTime())[0] || { senderId: '', receiverId: '', message: '', time: '' };
     },
@@ -75,8 +80,18 @@ export default defineComponent({
       const date = new Date(time);
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     },
-    openChatWindow(username: string) {
-      this.$emit('open-chat', username);
+    openChatWindow({ username, currentUserId }: { username: string, currentUserId: string }) {
+      this.$emit('open-chat', { username, currentUserId });
+    },
+    formatMessage(msg: string) {
+      const maxLength = 25;
+      const ellipsis = '...';
+
+      if (msg.length > maxLength) {
+        return msg.substring(0, maxLength) + ellipsis;
+      } else {
+        return msg;
+      }
     }
   }
 });

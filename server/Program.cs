@@ -20,7 +20,8 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IMongoClient, MongoClient>(_ => new MongoClient(builder.Configuration["MongoDB:AtlasURI"]));
-//add mongoIdentityConfiguration...
+
+// Add MongoDB Identity Configuration
 var mongoDbIdentityConfig = new MongoDbIdentityConfiguration
 {
     MongoDbSettings = new MongoDbSettings
@@ -47,11 +48,21 @@ builder.Services.ConfigureMongoDbIdentity<User, Role, Guid>(mongoDbIdentityConfi
 builder.Services.AddScoped<JWTTokenService>();
 builder.Services.AddScoped<AuthService>();
 
+// Add GroupChatService
 builder.Services.AddSingleton(sp =>
 {
     var mongoClient = sp.GetRequiredService<IMongoClient>();
     var database = mongoClient.GetDatabase(builder.Configuration["MongoDB:DatabaseName"]);
-    return new ChatService(database);
+    return new GroupChatService(database);
+});
+
+// Add ChatService with GroupChatService dependency
+builder.Services.AddSingleton(sp =>
+{
+    var mongoClient = sp.GetRequiredService<IMongoClient>();
+    var database = mongoClient.GetDatabase(builder.Configuration["MongoDB:DatabaseName"]);
+    var groupChatService = sp.GetRequiredService<GroupChatService>();
+    return new ChatService(database, groupChatService);
 });
 
 builder.Services.AddSingleton<UserService>(sp =>

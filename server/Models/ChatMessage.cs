@@ -3,6 +3,12 @@ using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.ComponentModel.DataAnnotations;
 
+public enum MessageType
+{
+    UserMessage,
+    GroupMessage
+}
+
 public class ChatMessage
 {
     [BsonId]
@@ -23,5 +29,9 @@ public class ChatMessage
     [Required]
     [BsonElement("time")]
     public DateTime Time { get; set; }
-}
 
+    [Required]
+    [BsonElement("type")]
+    [BsonRepresentation(BsonType.String)]
+    public MessageType Type { get; set; }
+}

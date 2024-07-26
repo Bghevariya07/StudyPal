@@ -6,15 +6,24 @@ using System.Threading.Tasks;
 public class ChatService
 {
     private readonly IMongoCollection<ChatMessage> _messages;
+    private readonly GroupChatService _groupChatService;
 
-    public ChatService(IMongoDatabase database)
+    public ChatService(IMongoDatabase database, GroupChatService groupChatService)
     {
         _messages = database.GetCollection<ChatMessage>("Messages");
+        _groupChatService = groupChatService;
     }
 
     public async Task<List<ChatMessage>> GetMessagesForUserAsync(string userId)
     {
-        return await _messages.Find(message => message.SenderId == userId || message.ReceiverId == userId).ToListAsync();
+        var userMessages = await _messages.Find(m => (m.SenderId == userId || m.ReceiverId == userId) && m.Type != MessageType.GroupMessage).ToListAsync();
+
+        var groupChats = await _groupChatService.GetGroupChatsForUserAsync(userId);
+        var groupIds = groupChats.Select(gc => gc.GroupId).ToList();
+
+        var groupMessages = await _messages.Find(m => groupIds.Contains(m.ReceiverId)).ToListAsync();
+
+        return userMessages.Concat(groupMessages).ToList();
     }
 
     public async Task<List<ChatMessage>> GetAllMessagesAsync()
