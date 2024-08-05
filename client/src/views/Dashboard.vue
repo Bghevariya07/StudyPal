@@ -1,40 +1,42 @@
 <template>
   <div class="flex">
-    <SideBar class="absolute"/>
-    <div class=" flex w-full flex-1 p-10 flex-col overflow-y-hidden gap-6">
+    <SideBar class="" />
+    <div class=" flex w-full flex-1 px-10 pt-6 flex-col overflow-y-hidden gap-6">
       <div class="flex row ">
         <h4>Welcome Back,</h4>
         <h4 class="text-blue pl-2"> {{ username }}!</h4>
       </div>
 
       <div class="flex rounded-2xl gap-5">
-        <div class="bg-zinc-100 p-5 rounded-2xl list-none flex flex-col flex-1  gap-5">
+        <div class="bg-zinc-100 p-5 rounded-2xl list-none flex flex-col flex-1  gap-3">
           <h5>Study Groups</h5>
 
           <div class="px-2 max-h-48 overflow-y-scroll">
             <div v-for="(schedules, date) in filterScheduleByDate(schedules)" class="mb-4">
               <h6 class="bg-blue-500 text-white rounded-2xl p-2">{{ formatDate(new Date(date)) }}</h6>
-              <li v-for="schedule in schedules" class="pt-1 pl-2">{{ formatScheduleItem(schedule.timeFrom, schedule.timeTo, schedule.courseId) }}</li>
+              <li v-for="schedule in schedules" class="pt-1 pl-2">{{ formatScheduleItem(schedule.timeFrom,
+                schedule.timeTo, schedule.courseId) }}</li>
             </div>
           </div>
         </div>
-        <div class="bg-zinc-100 p-5 rounded-2xl list-none flex flex-col flex-1  gap-5">
+        <div class="bg-zinc-100 p-5 rounded-2xl list-none flex flex-col flex-1  gap-3">
           <h5>Tutors</h5>
 
           <div class="px-2 max-h-48 overflow-y-scroll">
             <div v-for="(schedules, date) in filterScheduleByDate(schedules)" class="mb-4">
               <h6 class="bg-blue-500 text-white rounded-2xl p-2">{{ formatDate(new Date(date)) }}</h6>
-              <li v-for="schedule in schedules" class="pt-1 pl-2">{{ formatScheduleItem(schedule.timeFrom, schedule.timeTo, schedule.courseId) }}</li>
+              <li v-for="schedule in schedules" class="pt-1 pl-2">{{ formatScheduleItem(schedule.timeFrom,
+                schedule.timeTo, schedule.courseId) }}</li>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="flex flex-col gap-5 bg-zinc-100 p-5 rounded-2xl">
+      <div class="flex flex-col gap-5 bg-zinc-100 pt-5 px-5 pb-3 rounded-2xl">
         <h5>Courses</h5>
         <div class="flex flex-row gap-5 overflow-x-scroll pb-2">
-          <div v-for="course in courseIds"
-            class="bg-light-blue min-w-56 h-40 flex flex-col p-3 rounded-2xl hover:bg-gray-200">
+          <div v-for="course in courseIds" :style="{ backgroundColor: getCourseColor(course) }"
+            class=" min-w-56 h-40 flex flex-col p-3 rounded-2xl hover:bg-gray-200">
             <h5 class="">{{ course + ":" }}</h5>
             <h6 class="text-lg">{{ courses.find(val => val.courseCode === course)?.courseName }}</h6>
           </div>
@@ -148,7 +150,25 @@ export default {
       } catch (error) {
         console.log(error);
       }
+    },
+    getCourseColor(courseCode: string) {
+      if (courseCode.includes("CSCI")) {
+        return "#F5D8A8";
+      } else if (courseCode.includes("MATH")) {
+        return "#B1E6FF";
+      } else if (courseCode.includes("ASSC")) {
+        return "#FFD8E1";
+      } else if (courseCode.includes("ENGL")) {
+        return "#E6FFB1";
+      } else if (courseCode.includes("MGMT")) {
+        return "#FFD8A8";
+      } else if (courseCode.includes("MKTG")) {
+        return "#D8B1FF";
+      } else {
+        return "#FFFFFF";
+      }
     }
+
   },
   async mounted() {
     this.user = this.userStore.user;
@@ -161,7 +181,6 @@ export default {
 </script>
 
 <style scoped>
-
 div::-webkit-scrollbar {
   width: 0.5em;
 }
@@ -171,5 +190,4 @@ div::-webkit-scrollbar-thumb {
   outline: #333333;
   border-radius: 25px;
 }
-
 </style>

@@ -6,6 +6,6 @@ const getHeader = () => {
 
 export const server = axios.create({
   // baseURL: "http://localhost:5267",
-  baseURL: "https://studypal-s60l.onrender.com/",
+  baseURL: "https://csci4177grp-20.onrender.com/",
   headers: getHeader(), 
 });
