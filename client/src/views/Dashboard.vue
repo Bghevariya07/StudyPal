@@ -3,13 +3,13 @@
     <SideBar class="" />
     <div class=" flex w-full flex-1 px-10 pt-6 flex-col overflow-y-hidden gap-6">
       <div class="flex row ">
-        <h4>Welcome Back,</h4>
-        <h4 class="text-blue pl-2"> {{ username }}!</h4>
+        <h4 class="font-bold">Welcome Back,</h4>
+        <h4 class="text-blue pl-2 font-bold"> {{ username }}!</h4>
       </div>
 
       <div class="flex rounded-2xl gap-5">
         <div class="bg-zinc-100 p-5 rounded-2xl list-none flex flex-col flex-1  gap-5">
-          <h5>Study Groups</h5>
+          <h5 class="font-bold">Study Groups</h5>
 
           <div v-if="Object.keys(filterScheduleByDate(schedules)).length != 0" class="px-2 max-h-56 overflow-y-scroll">
             <div v-for="(schedules, date) in filterScheduleByDate(schedules)" class="mb-4">
@@ -22,7 +22,7 @@
           </h6>
         </div>
         <div class="bg-zinc-100 p-5 rounded-2xl list-none flex flex-col flex-1  gap-5">
-          <h5>Tutors</h5>
+          <h5 class="font-bold">Tutors</h5>
 
           <div v-if="Object.keys(filterScheduleByDate(tutorSchedules)).length != 0"
             class="px-2 max-h-56 overflow-y-scroll">
@@ -37,7 +37,7 @@
       </div>
 
       <div class="flex flex-col gap-5 bg-zinc-100 p-5 rounded-2xl">
-        <h5>Courses</h5>
+        <h5 class="font-bold">Courses</h5>
         <div class="flex flex-row gap-5 overflow-x-scroll pb-2">
           <div v-if="Object.keys(courseIds).length != 0" v-for="course in courseIds"
             :style="{ backgroundColor: getCourseColor(course) }"

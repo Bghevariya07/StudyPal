@@ -125,7 +125,7 @@ function getHeading() {
         <SideBar />
 
         <div class="align-middle mt-10 mx-10 w-screen">
-            <h4 class="mx-auto flex justify-center border-b-2 pb-3">{{ route.params.id }}</h4>
+            <h4 class="mx-auto flex justify-center border-b-2 pb-3 font-bold">{{ route.params.id }}</h4>
             <div class="flex justify-between mx-auto pt-3">
                 <h4>
                     <h4 class="text-center inline mr-5">Edit your availability</h4>
