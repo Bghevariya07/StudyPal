@@ -1,36 +1,49 @@
-<!-- TESTING PURPOSE -->
 <template>
   <div class="flex">
-    <SideBar />
-    <div class="p-6 gap-10 flex flex-col w-4/5">
-      <div class="flex row">
+    <SideBar class="absolute"/>
+    <div class=" flex w-full flex-1 p-10 flex-col overflow-y-hidden gap-6">
+      <div class="flex row ">
         <h4>Welcome Back,</h4>
         <h4 class="text-blue pl-2"> {{ username }}!</h4>
       </div>
 
-      <div class="flex p-3">
-        <div class="bg-cyan-100 p-5 rounded-2xl list-none flex flex-col">
-          <h6>{{ formatTime(new Date()) }}</h6>
-          <div v-for="scheduleItem in filterScheduleByDate()" class="">
-            <li class="pt-1">{{ formatScheduleItem(scheduleItem.timeFrom, scheduleItem.timeTo, scheduleItem.courseId) }}
-            </li>
+      <div class="flex rounded-2xl gap-5">
+        <div class="bg-zinc-100 p-5 rounded-2xl list-none flex flex-col flex-1  gap-5">
+          <h5>Study Groups</h5>
+
+          <div class="px-2 max-h-48 overflow-y-scroll">
+            <div v-for="(schedules, date) in filterScheduleByDate(schedules)" class="mb-4">
+              <h6 class="bg-blue-500 text-white rounded-2xl p-2">{{ formatDate(new Date(date)) }}</h6>
+              <li v-for="schedule in schedules" class="pt-1 pl-2">{{ formatScheduleItem(schedule.timeFrom, schedule.timeTo, schedule.courseId) }}</li>
+            </div>
           </div>
         </div>
-        <div class="bg-cyan-100">
+        <div class="bg-zinc-100 p-5 rounded-2xl list-none flex flex-col flex-1  gap-5">
+          <h5>Tutors</h5>
 
+          <div class="px-2 max-h-48 overflow-y-scroll">
+            <div v-for="(schedules, date) in filterScheduleByDate(schedules)" class="mb-4">
+              <h6 class="bg-blue-500 text-white rounded-2xl p-2">{{ formatDate(new Date(date)) }}</h6>
+              <li v-for="schedule in schedules" class="pt-1 pl-2">{{ formatScheduleItem(schedule.timeFrom, schedule.timeTo, schedule.courseId) }}</li>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="flex gap-5 bg-zinc-300 p-5 rounded-2xl overflow-x-auto">
-        <div v-for="course in courseIds"
-          class="bg-light-blue min-w-56 h-40 flex flex-col p-3 rounded-2xl hover:bg-gray-200">
-          <h5 class="">{{ course + ":" }}</h5>
-          <h6 class="text-lg">{{ courses.find(val => val.courseCode === course)?.courseName }}</h6>
+      <div class="flex flex-col gap-5 bg-zinc-100 p-5 rounded-2xl">
+        <h5>Courses</h5>
+        <div class="flex flex-row gap-5 overflow-x-scroll pb-2">
+          <div v-for="course in courseIds"
+            class="bg-light-blue min-w-56 h-40 flex flex-col p-3 rounded-2xl hover:bg-gray-200">
+            <h5 class="">{{ course + ":" }}</h5>
+            <h6 class="text-lg">{{ courses.find(val => val.courseCode === course)?.courseName }}</h6>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </template>
+
 <script lang="ts">
 import { useUserStore } from "@/store/user";
 import SideBar from "../components/SideBar.vue";
@@ -84,8 +97,31 @@ export default {
     filterScheduleByCourse(id: string) {
       return this.schedules.filter((schedule: ScheudleItem) => schedule.courseId === id);
     },
-    filterScheduleByDate() {
-      return this.schedules.filter((schedule: ScheudleItem) => new Date(schedule.timeFrom).getDate() === new Date().getDate()).sort((a, b) => a.timeFrom - b.timeFrom);
+    filterScheduleByDate(schedules: ScheudleItem[]) {
+      const today = new Date();
+
+      const filteredSchedules = schedules
+        .filter((schedule: ScheudleItem) => new Date(schedule.timeFrom) >= today)
+        .sort((a, b) => a.timeFrom - b.timeFrom);
+
+      const groupedSchedules = filteredSchedules.reduce((groups: { [key: string]: ScheudleItem[] }, schedule: ScheudleItem) => {
+        const date = new Date(schedule.timeFrom).toDateString();
+        if (!groups[date]) {
+          groups[date] = [];
+        }
+        groups[date].push(schedule);
+        return groups;
+      }, {});
+
+      return groupedSchedules;
+    },
+    formatDate(date: Date) {
+      const options: Intl.DateTimeFormatOptions = {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric'
+      };
+      return date.toLocaleDateString('en-US', options);
     },
     formatTime(time: Date) {
       const date = new Date(time);
@@ -123,3 +159,17 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+
+div::-webkit-scrollbar {
+  width: 0.5em;
+}
+
+div::-webkit-scrollbar-thumb {
+  background-color: gray;
+  outline: #333333;
+  border-radius: 25px;
+}
+
+</style>

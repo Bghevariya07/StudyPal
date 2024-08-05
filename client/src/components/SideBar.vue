@@ -1,6 +1,6 @@
 <template>
   <!-- Sidebar -->
-  <div class="w-64 h-96">
+  <div class="w-64 h-full ">
     <nav class="mt-6">
       <button
         class="w-full mb-3 hover:bg-primary hover:text-white"
@@ -318,7 +318,7 @@
       </ul>
     </nav>
   </div>
-  <div class="mt-5 border-r-2 border-gray-300 h-screen"></div>
+  <div class="mt-5 border-r-2 border-zinc-300 overflow-y-hidden"></div>
 </template>
 
 <script>
