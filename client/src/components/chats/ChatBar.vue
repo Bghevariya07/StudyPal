@@ -1,5 +1,5 @@
 <template>
-  <div class="flex w-1/3 justify-around flex-col">
+  <div class="flex w-1/3 justify-around flex-col chatWindow">
     <div class="p-4 font-bold border rounded-tl-2xl flex justify-between">
       <h6 class="">Conversations</h6>
       <NewChat @open-chat="openChatWindow" :currentUserId="currentUserId" />
@@ -31,20 +31,7 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
 import NewChat from '../chats/NewChat.vue';
-
-interface Message {
-  senderId: string;
-  receiverId: string;
-  message: string;
-  time: string;
-}
-
-interface Conversation {
-  id: string;
-  name?: string;
-  messages: Message[];
-  type: string;
-}
+import { Conversation, Message } from '@/models/Conversation';
 
 export default defineComponent({
   props: {
@@ -80,8 +67,8 @@ export default defineComponent({
       const date = new Date(time);
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     },
-    openChatWindow({ username, currentUserId }: { username: string, currentUserId: string }) {
-      this.$emit('open-chat', { username, currentUserId });
+    openChatWindow({ username }: { username: string }) {
+      this.$emit('open-chat', { username });
     },
     formatMessage(msg: string) {
       const maxLength = 25;
@@ -96,3 +83,9 @@ export default defineComponent({
   }
 });
 </script>
+
+<style>
+.chatWindow {
+  height: 80vh;
+}
+</style>

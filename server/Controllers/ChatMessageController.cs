@@ -6,11 +6,11 @@ namespace server;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ChatController : ControllerBase
+public class ChatMessageController : ControllerBase
 {
-    private readonly ChatService _chatService;
+    private readonly ChatMessageService _chatService;
 
-    public ChatController(ChatService chatService)
+    public ChatMessageController(ChatMessageService chatService)
     {
         _chatService = chatService;
     }

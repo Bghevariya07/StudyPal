@@ -1,59 +1,74 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using server.Models;
+using server.Services;
+using Microsoft.AspNetCore.Mvc;
+using server.Dtos;
+using Microsoft.AspNetCore.Identity;
+using System.Data;
 
-[ApiController]
-[Route("api/[controller]")]
-public class UserController : ControllerBase
+namespace server.Controllers
 {
-    private readonly UserService _userService;
-
-    public UserController(UserService userService)
+    [ApiController]
+    [Route("update/[controller]")]
+    public class UserController : ControllerBase
     {
-        _userService = userService;
-    }
-
-    [HttpGet("{detail}")]
-    public async Task<ActionResult<List<UserProfile>>> GetUserProfilesByFirstName(string detail)
-    {
-        var profiles = await _userService.GetUserProfilesByDetail(detail);
-        if (profiles == null || profiles.Count == 0)
+        private readonly UserService _userService;
+        private readonly UserManager<User> _userManager;
+        //private readonly CourseService _courseService;
+        public UserController(UserService userService, UserManager<User> userManager)
         {
-            return NotFound();
+            _userService = userService;
+            _userManager = userManager;
         }
-        return profiles;
-    }
 
-    [HttpGet("profiles")]
-    public async Task<ActionResult<List<UserProfile>>> GetAllUserProfiles()
-    {
-        var profiles = await _userService.GetAllUserProfiles();
-        if (profiles == null)
-        {
-            return NotFound();
-        }
-        return profiles;
-    }
+        [HttpGet]
+        public async Task<List<User>> Get() => await _userService.GetAsync();
 
-    [HttpGet("profiles/not/{username}")]
-    public async Task<ActionResult<List<UserProfile>>> GetProfilesNotUsername(string username)
-    {
-        var profiles = await _userService.GetProfilesNotUsername(username);
-        if (profiles == null)
+        [HttpGet("{username}")]
+        public async Task<ActionResult<User>> Get(string username)
         {
-            return NotFound();
+            var user = await _userService.GetAsync(username);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return user;
         }
-        return profiles;
-    }
 
-    [HttpGet("profiles/{email}")]
-    public async Task<ActionResult<UserProfile>> GetUsernameFromEmail(string email)
-    {
-        var profile = await _userService.GetUsernameFromEmail( email );
-        if (profile == null)
+        [HttpPut("{username}")]
+        public async Task<IActionResult> Update(string username, [FromBody] UpdateUserDto updateUserDto)
         {
-            return NotFound();
+            await _userService.UpdateAsync(username, updateUserDto);
+
+            return NoContent();
         }
-        return profile;
+
+        [HttpPut("password/{username}")]
+        public async Task<IActionResult> UpdatePassword(string username, [FromBody] UpdatePasswordDto updatePasswordDto)
+        {
+            var verified = await _userService.VerifyPasswordAsync(username, updatePasswordDto.CurrentPassword);
+            if (verified == false)
+            {
+                return Unauthorized("Password is incorrect!");
+            }
+
+            await _userService.UpdatePasswordAsync(username, updatePasswordDto);
+
+            return NoContent();
+        }
+
+        [HttpPut("course/{username}")]
+        public async Task<IActionResult> UpdateCourse(string username, [FromBody] CourseDto courseDto)
+        {
+            var newCourse = new Course()
+            {
+                CourseCode = courseDto.CourseCode,
+                CourseName = courseDto.CourseName
+            };
+            //await _courseService.AddCourse(newCourse);
+            await _userService.AddCourse(username, newCourse);
+            
+            return NoContent();
+
+        }
     }
 }

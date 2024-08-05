@@ -16,7 +16,7 @@ public class UserProfile
 
     [BsonElement("email")]
     public string Email { get; set; }
-    
+
     [BsonElement("username")]
     public string Username { get; set; }
 }

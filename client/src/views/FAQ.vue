@@ -70,7 +70,7 @@ const accordionTutorItems = [
 </script>
 
 <template>
-  <div class="p-10 pt-20">
+  <div class="container">
     <h1 class="text-3xl font-bold text-center">
       Frequently Asked Questions (FAQ)
     </h1>

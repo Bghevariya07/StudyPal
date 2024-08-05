@@ -1,14 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace server.Controllers;
+namespace server.Controllers; 
 
 [Route("api/[controller]")]
 [ApiController]
-public class UserContactController : ControllerBase
-{
+public class UserContactController : ControllerBase {
     [HttpPost]
-    public JsonResult CreateContact(Models.UserContactData data)
-    {
+    public JsonResult CreateContact(Models.UserContactData data) {
         Console.WriteLine(data.Email, data.Message, data.Name);
         return new JsonResult(Ok("hello"));
     }

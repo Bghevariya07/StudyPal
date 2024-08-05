@@ -7,7 +7,7 @@
         <div v-if="isSearchBoxOpen" class="absolute left-0 mt-2 bg-white p-4 rounded shadow-lg w-64">
             <input type="text" v-model="searchQuery" @input="searchUsernames" placeholder="Search usernames..."
                 class="w-full p-2 border rounded mb-2" />
-            <ul>
+            <ul class="overflow-y-auto h-min max-h-52">
                 <li v-for="user in filteredUsernames" :key="user" @click="openChatWindow(user)"
                     class="p-2 cursor-pointer hover:bg-gray-200">
                     {{ user }}
@@ -58,16 +58,19 @@ export default {
         },
         openChatWindow(user) {
             const name = user.split(" : ")[0];
+            console.log(user)
+            console.log(name)
             this.profiles.map(profile => {
                 if (profile.username === name) {
-                    this.$emit('open-chat', { username: profile.username, currentUserId: this.currentUserId });
+                    console.log(profile)
+                    this.$emit('open-chat', { username: profile.username });
                     this.isSearchBoxOpen = false;
                 }
             });
         },
         async fetchAllUsers() {
             try {
-                const response = await axios.get('/api/user/profiles');
+                const response = await axios.get('api/Userprofile/profiles/not/' + this.currentUserId);
                 this.profiles = response.data;
                 this.sortUsernames();
             } catch (error) {

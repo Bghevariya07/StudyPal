@@ -3,12 +3,12 @@ using server.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-public class ChatService
+public class ChatMessageService
 {
     private readonly IMongoCollection<ChatMessage> _messages;
     private readonly GroupChatService _groupChatService;
 
-    public ChatService(IMongoDatabase database, GroupChatService groupChatService)
+    public ChatMessageService(IMongoDatabase database, GroupChatService groupChatService)
     {
         _messages = database.GetCollection<ChatMessage>("Messages");
         _groupChatService = groupChatService;
@@ -36,4 +36,3 @@ public class ChatService
         await _messages.InsertOneAsync(message);
     }
 }
-

@@ -20,8 +20,8 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IMongoClient, MongoClient>(_ => new MongoClient(builder.Configuration["MongoDB:AtlasURI"]));
-
-// Add MongoDB Identity Configuration
+builder.Services.AddTransient<UserService>();
+//add mongoIdentityConfiguration...
 var mongoDbIdentityConfig = new MongoDbIdentityConfiguration
 {
     MongoDbSettings = new MongoDbSettings
@@ -31,13 +31,12 @@ var mongoDbIdentityConfig = new MongoDbIdentityConfiguration
     },
     IdentityOptionsAction = options =>
     {
-        // TODO: Change based on password requirement
-        options.Password.RequireDigit = false;
-        options.Password.RequiredLength = 1;
-        options.Password.RequireLowercase = false;
-        options.Password.RequiredUniqueChars = 0;
-        options.Password.RequireNonAlphanumeric = false;
-        options.Password.RequireUppercase = false;
+        options.Password.RequireDigit = true;
+        options.Password.RequiredLength = 8;
+        options.Password.RequireLowercase = true;
+        options.Password.RequiredUniqueChars = 1;
+        options.Password.RequireNonAlphanumeric = true;
+        options.Password.RequireUppercase = true;
     }
 };
 
@@ -48,7 +47,14 @@ builder.Services.ConfigureMongoDbIdentity<User, Role, Guid>(mongoDbIdentityConfi
 builder.Services.AddScoped<JWTTokenService>();
 builder.Services.AddScoped<AuthService>();
 
-// Add GroupChatService
+builder.Services.AddSingleton(sp =>
+{
+    var mongoClient = sp.GetRequiredService<IMongoClient>();
+    var database = mongoClient.GetDatabase(builder.Configuration["MongoDB:DatabaseName"]);
+    var groupChatService = sp.GetRequiredService<GroupChatService>();
+    return new ChatMessageService(database, groupChatService);
+});
+
 builder.Services.AddSingleton(sp =>
 {
     var mongoClient = sp.GetRequiredService<IMongoClient>();
@@ -56,19 +62,11 @@ builder.Services.AddSingleton(sp =>
     return new GroupChatService(database);
 });
 
-// Add ChatService with GroupChatService dependency
 builder.Services.AddSingleton(sp =>
 {
     var mongoClient = sp.GetRequiredService<IMongoClient>();
     var database = mongoClient.GetDatabase(builder.Configuration["MongoDB:DatabaseName"]);
-    var groupChatService = sp.GetRequiredService<GroupChatService>();
-    return new ChatService(database, groupChatService);
-});
-
-builder.Services.AddSingleton<UserService>(sp =>
-{
-    var mongoClient = sp.GetRequiredService<IMongoClient>();
-    return new UserService(mongoClient, builder.Configuration["MongoDB:DatabaseName"], "UserProfiles");
+    return new UserProfileService(database);
 });
 
 builder.Services.AddAuthentication(options =>

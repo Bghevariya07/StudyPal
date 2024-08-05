@@ -6,8 +6,8 @@
           {{ selectedConversation.id.toUpperCase()[0] }}
         </div>
         <div>
-          <p class="text-gray-800 font-bold">{{ selectedConversation.id }}</p>
-          <p class="text-gray-600">{{ selectedConversation.name }}</p>
+          <p class="text-gray-800 font-bold">{{ selectedConversation.name }}</p>
+          <p class="text-gray-600">{{ selectedConversation.id }}</p>
         </div>
       </div>
 
@@ -44,25 +44,7 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
 import SendIcon from '../../assets/send-icon.png';
-
-enum MessageType {
-  UserMessage = 'UserMessage',
-  GroupMessage = 'GroupMessage'
-}
-
-interface Message {
-  senderId: string;
-  message: string;
-  time: string;
-  type: MessageType;
-}
-
-interface Conversation {
-  id: string;
-  name: string;
-  messages: Message[];
-  type: MessageType;
-}
+import { Conversation } from '@/models/Conversation';
 
 export default defineComponent({
   props: {
@@ -117,8 +99,9 @@ export default defineComponent({
 
 <style scoped>
 .messages-container {
-  max-height: calc(92vh - 215px); /* Adjust based on the height of other elements */
+  max-height: calc(92vh - 215px);
 }
+
 .bg-zinc-100 {
   background-color: #f3f4f6;
 }
