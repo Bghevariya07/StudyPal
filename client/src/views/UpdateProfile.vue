@@ -1,5 +1,5 @@
 <template>
-  <div class="flex">
+  <div class="flex ml-64">
     <SideBar />
     <!-- Main content -->
     <div class="flex-1 p-6 pl-8">

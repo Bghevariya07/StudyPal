@@ -1,5 +1,5 @@
 <template>
-  <div class="flex">
+  <div class="flex ml-64">
     <SideBar class="" />
     <div class=" flex w-full flex-1 px-10 pt-6 flex-col overflow-y-hidden gap-6">
       <div class="flex row ">
@@ -8,38 +8,48 @@
       </div>
 
       <div class="flex rounded-2xl gap-5">
-        <div class="bg-zinc-100 p-5 rounded-2xl list-none flex flex-col flex-1  gap-3">
+        <div class="bg-zinc-100 p-5 rounded-2xl list-none flex flex-col flex-1  gap-5">
           <h5>Study Groups</h5>
 
-          <div class="px-2 max-h-48 overflow-y-scroll">
+          <div v-if="Object.keys(filterScheduleByDate(schedules)).length != 0" class="px-2 max-h-56 overflow-y-scroll">
             <div v-for="(schedules, date) in filterScheduleByDate(schedules)" class="mb-4">
               <h6 class="bg-blue-500 text-white rounded-2xl p-2">{{ formatDate(new Date(date)) }}</h6>
               <li v-for="schedule in schedules" class="pt-1 pl-2">{{ formatScheduleItem(schedule.timeFrom,
                 schedule.timeTo, schedule.courseId) }}</li>
             </div>
           </div>
+          <h6 v-else class="m-auto my-20 text-center">You don't have any Study Group Sessions scheduled for this week.
+          </h6>
         </div>
-        <div class="bg-zinc-100 p-5 rounded-2xl list-none flex flex-col flex-1  gap-3">
+        <div class="bg-zinc-100 p-5 rounded-2xl list-none flex flex-col flex-1  gap-5">
           <h5>Tutors</h5>
 
-          <div class="px-2 max-h-48 overflow-y-scroll">
+          <div v-if="Object.keys(filterScheduleByDate(tutorSchedules)).length != 0"
+            class="px-2 max-h-56 overflow-y-scroll">
             <div v-for="(schedules, date) in filterScheduleByDate(schedules)" class="mb-4">
               <h6 class="bg-blue-500 text-white rounded-2xl p-2">{{ formatDate(new Date(date)) }}</h6>
               <li v-for="schedule in schedules" class="pt-1 pl-2">{{ formatScheduleItem(schedule.timeFrom,
                 schedule.timeTo, schedule.courseId) }}</li>
             </div>
           </div>
+          <h6 v-else class="m-auto my-20 text-center">You don't have any Tutor Sessions scheduled for this week.</h6>
         </div>
       </div>
 
-      <div class="flex flex-col gap-5 bg-zinc-100 pt-5 px-5 pb-3 rounded-2xl">
+      <div class="flex flex-col gap-5 bg-zinc-100 p-5 rounded-2xl">
         <h5>Courses</h5>
         <div class="flex flex-row gap-5 overflow-x-scroll pb-2">
-          <div v-for="course in courseIds" :style="{ backgroundColor: getCourseColor(course) }"
-            class=" min-w-56 h-40 flex flex-col p-3 rounded-2xl hover:bg-gray-200">
-            <h5 class="">{{ course + ":" }}</h5>
-            <h6 class="text-lg">{{ courses.find(val => val.courseCode === course)?.courseName }}</h6>
+          <div v-if="Object.keys(courseIds).length != 0" v-for="course in courseIds"
+            :style="{ backgroundColor: getCourseColor(course) }"
+            class=" min-w-56 h-40 flex flex-col rounded-2xl hover:bg-gray-200">
+            <RouterLink :to="'/course/' + course"
+              class="block px-4 p-3 py-2 text-medium">
+              <h5 class="">{{ course + ":" }}</h5>
+              <h6 class="text-lg">{{ courses.find(val => val.courseCode === course)?.courseName }}</h6>
+            </RouterLink>
+
           </div>
+          <h6 v-else class="m-auto my-10 text-center">Schedule Tutor / Group Study Sessions to get started!</h6>
         </div>
       </div>
     </div>
@@ -60,6 +70,7 @@ export default {
       username: "",
       userId: "",
       schedules: [] as ScheudleItem[],
+      tutorSchedules: [] as ScheudleItem[],
       courseIds: [] as string[],
       courses: [] as Course[]
     }

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex overflow-y-hidden">
+  <div class="flex overflow-y-hidden ml-64">
     <SideBar />
 
     <div class="flex w-full flex-1 p-10 mainWindow">

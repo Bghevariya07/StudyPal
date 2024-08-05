@@ -1,5 +1,5 @@
 <template>
-    <div class="flex">
+    <div class="flex ml-64">
         <SideBar />
         <div class="flex-1 p-6 pl-8">
             <div class="px-4 flex items-center justify-between bg-white">
