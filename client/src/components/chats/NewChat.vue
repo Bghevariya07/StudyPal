@@ -7,7 +7,7 @@
         <div v-if="isSearchBoxOpen" class="absolute left-0 mt-2 bg-white p-4 rounded shadow-lg w-64">
             <input type="text" v-model="searchQuery" @input="searchUsernames" placeholder="Search usernames..."
                 class="w-full p-2 border rounded mb-2" />
-            <ul class="overflow-y-auto h-min max-h-52">
+            <ul class="overflow-y-auto h-min">
                 <li v-for="user in filteredUsernames" :key="user" @click="openChatWindow(user)"
                     class="p-2 cursor-pointer hover:bg-gray-200">
                     {{ user }}
@@ -17,9 +17,11 @@
     </div>
 </template>
 
-<script>
+<script lang='ts'>
 import axios from 'axios';
 import PlusIcon from '../../assets/plus-icon-1.svg'
+import { Conversation, MessageType } from '@/models/Conversation';
+import { UserProfile } from '@/models/user';
 
 export default {
     props: {
@@ -33,9 +35,10 @@ export default {
             PlusIcon,
             isSearchBoxOpen: false,
             searchQuery: '',
-            profiles: [],
-            usernames: [],
-            filteredUsernames: []
+            profiles: [] as UserProfile[],
+            conversations: [] as Conversation[],
+            usernames: [] as string[],
+            filteredUsernames: [] as string[]
         };
     },
     methods: {
@@ -56,14 +59,11 @@ export default {
                 user.toLowerCase().includes(query)
             );
         },
-        openChatWindow(user) {
+        openChatWindow(user: string) {
             const name = user.split(" : ")[0];
-            console.log(user)
-            console.log(name)
-            this.profiles.map(profile => {
-                if (profile.username === name) {
-                    console.log(profile)
-                    this.$emit('open-chat', { username: profile.username });
+            this.conversations.map(profile => {
+                if (profile.id === name) {
+                    this.$emit('open-chat', { username: profile.id });
                     this.isSearchBoxOpen = false;
                 }
             });
@@ -72,13 +72,23 @@ export default {
             try {
                 const response = await axios.get('api/Userprofile/profiles/not/' + this.currentUserId);
                 this.profiles = response.data;
+                this.conversations = this.setCoversations(this.profiles);
                 this.sortUsernames();
             } catch (error) {
                 console.error('Error fetching profiles:', error);
             }
         },
+        setCoversations(values: UserProfile[]): Conversation[] {
+            return values.map(user => ({
+                id: user.username,
+                firstname: user.firstName,
+                lastname: user.lastName,
+                messages: [],
+                type: MessageType.UserMessage
+            }));
+        },
         sortUsernames() {
-            this.usernames = this.profiles.map(user => `${user.username} : ${user.firstName} ${user.lastName}`);
+            this.usernames = this.conversations.map(user => `${user.id} : ${user.firstname} ${user.lastname}`);
         }
     }
 };

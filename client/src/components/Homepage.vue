@@ -1,6 +1,8 @@
 <template>
-  <div class="min-h-screen bg-white">
-    <main class="py-16">
+  <div class="flex">
+    <SideBar/>
+    <div class="min-h-screen w-full bg-white">
+    <main class="py-16 w-full">
       <section class="flex flex-col md:flex-row text-center md:text-left mb-16 p-12 items-center text-black px-16">
         <div class="md:w-1/2">
           <h1 class="font-bold mb-8">Find your <span class="text-blue">StudyPal</span> within a minute</h1>
@@ -60,6 +62,8 @@
       </section>
     </main>
   </div>
+  </div>
+  
 </template>
 
 <script>
@@ -68,6 +72,7 @@ import mainImage2 from "../assets/main-image-2.svg";
 import groupIcon1 from "../assets/group-icon-1.png";
 import groupIcon2 from "../assets/group-icon-2.png";
 import calendarIcon1 from "../assets/calendar-icon-1.png";
+import SideBar from "./SideBar.vue";
 
 export default {
   name: "LandingPage",
@@ -80,6 +85,9 @@ export default {
       mainImage2
     };
   },
+  components: {
+    SideBar
+  }
 };
 </script>
 

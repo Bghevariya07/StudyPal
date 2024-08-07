@@ -1,7 +1,7 @@
 <template>
-  <div class="flex ml-64">
+  <div class="flex">
     <SideBar class="" />
-    <div class=" flex w-full flex-1 px-10 pt-6 flex-col overflow-y-hidden gap-6">
+    <div class=" flex w-full flex-1 px-10 pt-10 flex-col overflow-y-hidden gap-6">
       <div class="flex row ">
         <h4 class="font-bold">Welcome Back,</h4>
         <h4 class="text-blue pl-2 font-bold"> {{ username }}!</h4>
@@ -42,8 +42,7 @@
           <div v-if="Object.keys(courseIds).length != 0" v-for="course in courseIds"
             :style="{ backgroundColor: getCourseColor(course) }"
             class=" min-w-56 h-40 flex flex-col rounded-2xl hover:bg-gray-200">
-            <RouterLink :to="'/course/' + course"
-              class="block px-4 p-3 py-2 text-medium">
+            <RouterLink :to="'/course/' + course" class="block px-4 p-3 py-2 text-medium">
               <h5 class="">{{ course + ":" }}</h5>
               <h6 class="text-lg">{{ courses.find(val => val.courseCode === course)?.courseName }}</h6>
             </RouterLink>
@@ -61,7 +60,7 @@ import { useUserStore } from "@/store/user";
 import SideBar from "../components/SideBar.vue";
 import { User } from "@/models/user";
 import axios from "axios";
-import { Course, ScheudleItem } from "@/models/Schedule";
+import { ScheudleItem, Course } from "@/models/Schedule";
 
 export default {
   data() {

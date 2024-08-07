@@ -1,6 +1,7 @@
 export interface Conversation {
     id: string;
-    name?: string;
+    firstname?: string;
+    lastname?: string;
     messages: Message[];
     type: MessageType;
 }
@@ -16,4 +17,9 @@ export interface Message {
 export enum MessageType {
     UserMessage = 'UserMessage',
     GroupMessage = 'GroupMessage'
+}
+
+export interface GroupChat {
+    groupId: string;
+    users: string[];
 }
