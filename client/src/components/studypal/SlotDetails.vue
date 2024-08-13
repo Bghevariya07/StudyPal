@@ -23,7 +23,9 @@ export default {
     const username = userStore.storedUser!.username
     const route = useRoute()
     const courseId = route.params.id
+    console.log(userStore.storedUser?.username);
     return { userStore, uid, username, route, courseId };
+
   },
   props: {
     slotData: {
@@ -160,6 +162,7 @@ export default {
 
 <template>
   <div>
+    hello
     <div class="py-10 space-y-2" v-if="slotData.data.isSelected">
       <p class="text-3xl font-semibold pb-2 border-b">Study Group:</p>
       <p class="text-xl pt-1">{{ courseId }}</p>
