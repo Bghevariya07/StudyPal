@@ -13,10 +13,10 @@ export interface Course {
 }
 
 export interface TutorSchedule {
-    userId: string;
+    eventId: string,
+    username: string;
+    courseId: string;
     timeFrom: number;
     timeTo: number;
-    courseId: string;
-    eventId: string,
     users: string[]
 }

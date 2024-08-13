@@ -1,29 +1,31 @@
 <template>
-    <div class="flex" @click="toggleSearchBar('close')">
+    <div class="flex">
         <SideBar class="" />
         <div class="w-full align-middle p-10">
             <div class="flex justify-start gap-10 items-center mb-4">
-                <div>
-                    <label for="role-select">Role:</label>
-                    <select id="role-select" v-model="role">
-                        <option value="tutor">Tutor</option>
-                        <option value="student">Student</option>
+                <div class="mt-2 p-4 rounded flex gap-2 w-56 align-center">
+                    <label for="role-select" class="m-auto">Role:</label>
+                    <select id="role-select" v-model="role" class="p-2 w-full hover:bg-gray-200 rounded-lg">
+                        <option value="tutor" class="p-5 w-full hover:bg-gray-200 rounded">Tutor</option>
+                        <option value="student" class="p-2 w-full hover:bg-gray-200 rounded">Student</option>
                     </select>
                 </div>
                 <div @click="fetchCourses" class="w-72">
-                    <div class="relative inline-block mt-2 bg-white p-4 rounded shadow-lg w-full">
+                    <div class="relative inline-block mt-2 bg-white p-4 rounded w-full flex">
                         <input type="text" v-model="searchQuery" placeholder="Search Courses... "
-                        class="px-3 my-2 border rounded-lg focus:outline-none focus:border-blue-500 w-full" />
+                            class="px-3 my-2 border rounded-lg focus:outline-none focus:border-blue-500 w-full mr-2" />
+                        <button @click="toggleSearchBar" class="p-1 h-7 m-auto bg-blue-500 text-white rounded-full">
+                            <img :src="CloseIcon" class="w-5 h-5" alt="new-chat">
+                        </button>
                     </div>
-                    
 
-                    <ul @click="toggleSearchBar('open')" v-if="isSearchBoxOpen" class="absolute bg-white overflow-y-auto h-min max-h-52">
-                        <li v-for="course in filteredCourses" :key="course" @click="selectCourse(course)"
-                            class="p-2 cursor-pointer hover:bg-gray-200">
-                            {{ course }}
-                        </li>
+
+                    <ul class="absolute bg-white overflow-y-auto h-min max-h-52">
+                        <li v-for="course in filtered" @click="selectCourse(course)"
+                            class="p-2 cursor-pointer hover:bg-gray-200"> {{ course }} </li>
                     </ul>
                 </div>
+                <h4 v-if="courseId !== ''">{{ courseId }}</h4>
             </div>
             <div class="flex flex-row gap-5">
                 <div class="parent flex-2">
@@ -62,14 +64,15 @@
                     </div>
                     <div class="py-10 space-y-2" v-if="selectedSlot?.data.isSelected && role === 'student'">
                         <p class="text-3xl font-semibold pb-2 border-b">Study Session:</p>
-                        <p class="text-xl pt-1">{{ }}</p>
-                        <p class="text-xl">{{ formatDate(selectedSlot?.start) }}</p>
+                        <p class="text-xl pt-1">Tutor: {{ getUserDetails(selectedSlot.data.eventId)?.firstName + " " + getUserDetails(selectedSlot.data.eventId)?.lastName }}</p>
+                        <p class="text-xl pb-1">Registered Students: {{ selectedSlot.data.users.length }}</p>
+                        <p class="text-xl pt-2 border-b">{{ formatDate(selectedSlot?.start) }}</p>
                         <p class="text-xl">{{ formatTime(selectedSlot?.start, new Date(selectedSlot?.start.getTime() +
                             60 * 60 * 1000)) }}</p>
                         <br>
-                        <button @click="joinSession" class="mx-2 bg-primary text-white py-2 px-4 rounded-full p-2">Join
+                        <button @click="joinSession" v-if="!selectedSlot.data.users.includes(userName)" class="mx-2 bg-primary text-white py-2 px-4 rounded-full p-2">Join
                             this Session</button>
-                        <button @click="leaveSession"
+                        <button @click="leaveSession" v-else
                             class="mx-2 bg-red-500 text-white py-2 px-4 rounded-full p-2">Leave this Session</button>
                     </div>
                 </div>
@@ -85,6 +88,8 @@ import { ref, watch, onMounted, computed } from "vue";
 import { days, getWeekStart, hours } from '@/lib/utils';
 import axios from "axios";
 import { TutorSchedule } from "@/models/Schedule";
+import CloseIcon from "../../assets/plus-icon-1.svg";
+import { UserProfile } from "@/models/user";
 
 interface SlotDataSelected {
     isSelected: true;
@@ -107,7 +112,7 @@ type SlotData = SlotDataSelected | SlotDataUnselected;
 
 export default {
     components: {
-        SideBar,
+        SideBar
     },
     setup() {
         const role = ref<'tutor' | 'student'>('student');
@@ -124,6 +129,9 @@ export default {
         const courses = ref<string[]>([]);
         const courseId = ref('');
         const isSearchBoxOpen = ref(false);
+        const isSlotSelected = ref(false);
+        const filtered = ref<string[]>([]);
+        const userProfiles = ref<UserProfile[]>([]);
 
         const formatDate = (date: Date) => {
             const options: Intl.DateTimeFormatOptions = { month: 'long', day: 'numeric', year: 'numeric' };
@@ -140,15 +148,16 @@ export default {
         const onViewChanged = (newRole: 'tutor' | 'student') => {
             fetchTutorSchedules();
 
-            if (userName) {
+            if (userName && courseId) {
 
                 if (newRole === "student") {
-                    tutorSchedules.value = tutorSchedules.value.filter(i => i.userId !== userName && i.users.includes(userName));
+                    tutorSchedules.value = tutorSchedules.value.filter(i => i.username !== userName && i.courseId === courseId.value);
                 } else if (newRole === "tutor") {
-                    tutorSchedules.value = tutorSchedules.value.filter(i => i.userId === userName);
+                    tutorSchedules.value = tutorSchedules.value.filter(i => i.username === userName && i.courseId === courseId.value);
                 }
             }
 
+            isSlotSelected.value = false;
             slots.value = getSlots();
         };
 
@@ -197,16 +206,19 @@ export default {
         const fillSlots = () => {
             fetchTutorSchedules();
 
-            if (userName) {
-                tutorSchedules.value = tutorSchedules.value.filter(i => i.userId !== userName && i.users.includes(userName));
+            if (userName && role.value === "student") {
+                tutorSchedules.value = tutorSchedules.value.filter(i => i.username !== userName && i.courseId === courseId.value);
+            } else {
+                tutorSchedules.value = tutorSchedules.value.filter(i => i.username === userName && i.courseId === courseId.value);
             }
+
             slots.value = getSlots();
         }
 
-        function createEventId(courseId: string, date: Date): string {
+        function createEventId(courseId: string, date: Date, username: string): string {
             const startTime = date.getTime();
             const endTime = startTime + (60 * 60 * 1000);
-            return `${courseId}-${userName}-${startTime}-${endTime}`;
+            return `${courseId}-${username}-${startTime}-${endTime}`;
         }
 
         const getIsSelected = (date: Date): SlotData => {
@@ -214,15 +226,21 @@ export default {
             if (schedule) {
                 const users = tutorSchedules.value
                     ?.filter(i => i.timeFrom <= date.getTime() && i.timeTo > date.getTime())
-                    .map(schedule => schedule.userId);
+                    .map(schedule => schedule.username);
                 if (users) {
-                    return { isSelected: true, id: schedule.userId, users, eventId: "" };
+                    return { isSelected: true, id: schedule.username, users, eventId: schedule.eventId };
                 }
             }
-            return { isSelected: false, eventId: "" };
+
+            if (schedule?.eventId) {
+                return { isSelected: false, eventId: schedule?.eventId };
+            } else {
+                return { isSelected: false, eventId: "" };
+            }
         }
 
         const handleClick = async (slot: Date, data: SlotData) => {
+            isSlotSelected.value = true;
             console.log(data)
             selectedSlot.value = { start: slot, data: data };
             await fetchTutorSchedules();
@@ -230,17 +248,30 @@ export default {
 
         const leaveSession = async () => {
             try {
-                const eventId = createEventId("", selectedSlot.value.start);
-                await axios.put(`api/tutorSchedules/addUser/${eventId}/${userName}`);
+                // const eventId = createEventId(courseId.value, selectedSlot.value.start, );
+                // console.log(eventId);
+                isSlotSelected.value = false;
+
+                await axios.put(`api/tutorSchedule/removeuser/${selectedSlot.value.data.eventId}/${userName}`);
+                await fillSlots();
             } catch (error) {
                 console.log(error);
             }
         }
 
+        const getUserDetails = (eventId: string) => {
+            const parts = eventId.split('-');
+            return userProfiles.value.find((i : UserProfile) => i.username == parts[1]);
+        }
+
         const joinSession = async () => {
             try {
-                const eventId = createEventId("", selectedSlot.value.start);
-                await axios.put(`api/tutorSchedules/removeUser/${eventId}/${userName}`);
+                // const eventId = createEventId(courseId.value, selectedSlot.value.start, user);
+                // console.log(eventId);
+                isSlotSelected.value = false;
+
+                await axios.put(`api/tutorSchedule/adduser/${selectedSlot.value.data.eventId}/${userName}`);
+                await fillSlots();
             } catch (error) {
                 console.log(error);
             }
@@ -248,14 +279,19 @@ export default {
 
         const createSession = async () => {
             try {
-                await axios.post(`api/tutorSchedules`, {
+                let newSession: TutorSchedule = {
+                    eventId: createEventId(courseId.value, selectedSlot.value.start, userName),
                     username: userName,
-                    eventId: createEventId("", selectedSlot.value.start),
+                    courseId: courseId.value,
                     timeFrom: selectedSlot.value.start.getTime(),
                     timeTo: selectedSlot.value.start.getTime() + (60 * 60 * 1000),
-                    courseId: "",
                     users: []
-                });
+                }
+
+                isSlotSelected.value = false;
+
+                await axios.post(`api/tutorSchedule`, newSession);
+                await fillSlots();
             } catch (error) {
                 console.log(error);
             }
@@ -273,37 +309,54 @@ export default {
         };
 
         const selectCourse = (course: string) => {
+            isSearchBoxOpen.value = true;
             const name = course.split(" : ")[0];
-            console.log(name);
             courseId.value = name;
-            isSearchBoxOpen.value = false;
+            filtered.value = [];
+            searchQuery.value = '';
+            isSlotSelected.value = false;
+            fillSlots();
 
             fetchTutorSchedules();
-        }
+        };
 
-        const filteredCourses = computed(() => {
+        const filteredCourses = () => {
             if (!searchQuery.value) {
                 return courses.value; // Return the entire list if no search query is entered
             }
-            const query = searchQuery.value.toLowerCase();
-            return courses.value.filter((course: string) => course.toLowerCase().includes(query));
-        });
 
+            const query = searchQuery.value.toLowerCase();
+            const valyes = courses.value.filter((course: string) => course.toLowerCase().includes(query));
+            return valyes;
+        };
 
         const cancelSession = async () => {
             try {
-                const eventId = createEventId("", selectedSlot.value.start);
-                await axios.delete(`api/tutorSchedules/delete/${eventId}`);
+                const eventId = createEventId(courseId.value, selectedSlot.value.start, userName);
+                isSlotSelected.value = false;
+                await axios.delete(`api/tutorSchedule/delete/${eventId}`);
+                await fillSlots();
             } catch (error) {
                 console.log(error);
             }
-        }
+        };
 
-        const toggleSearchBar = (label : string) => {
-            if (label === 'close' && isSearchBoxOpen) {
+        const toggleSearchBar = () => {
+            if (isSearchBoxOpen.value) {
                 isSearchBoxOpen.value = false;
+                filtered.value = [];
+                searchQuery.value = '';
             } else {
                 isSearchBoxOpen.value = true;
+            }
+        }
+
+        const fetchAllUsers = async () => {
+            try {
+                const response = await axios.get('api/Userprofile/profiles/');
+                userProfiles.value = response.data;
+            } catch (error) {
+                console.error('Error fetching profiles:', error);
             }
         }
 
@@ -311,8 +364,24 @@ export default {
             await onViewChanged(newRole);
         });
 
+        watch(searchQuery, () => {
+            if (searchQuery.value) {
+                filtered.value = filteredCourses();
+            } else {
+                filtered.value = [];
+            }
+        });
+
         onMounted(async () => {
             await onViewChanged(role.value);
+
+            setInterval(async () => {
+                await fillSlots();
+            }, 3000);
+
+            setInterval(async () => {
+                await fetchAllUsers();
+            }, 8000);
         });
 
         return {
@@ -334,12 +403,17 @@ export default {
             filteredCourses,
             selectCourse,
             isSearchBoxOpen,
-            toggleSearchBar
+            toggleSearchBar,
+            filtered,
+            CloseIcon,
+            courseId,
+            getUserDetails,
+            userName
         };
     },
     async mounted() {
         this.role = "student";
-        this.fillSlots();
+        this.fillSlots()
     }
 };
 </script>
