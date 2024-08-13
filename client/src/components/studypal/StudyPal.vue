@@ -84,7 +84,7 @@
 <script lang="ts">
 import { useUserStore } from "@/store/user";
 import SideBar from "../SideBar.vue";
-import { ref, watch, onMounted, computed } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { days, getWeekStart, hours } from '@/lib/utils';
 import axios from "axios";
 import { TutorSchedule } from "@/models/Schedule";
