@@ -5,10 +5,7 @@
 StudyPal is a collaborative learning web application designed to connect university students with personalized study pods and tutors. The platform intelligently matches users based on skill gaps, learning preferences, and availability, enabling real-time interaction through chat, shared resources, and virtual sessions.
 
 ## Deployment Link  
-[Deployment link not available — add if hosted]
-
-## UI Link  
-[GitHub Repository - Frontend](https://github.com/Bghevariya07/StudyPal)
+[https://study-pal-bhavya.netlify.app/](https://study-pal-bhavya.netlify.app/)
 
 ## Tech Stack
 
